@@ -1673,6 +1673,19 @@ public partial class ImmuClient
     /// <summary>
     /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
     /// </summary>
+    /// <param name="set">The set identifier</param>
+    /// <param name="offset">The inclusive offset at which to continue the search</param>
+    /// <param name="limit">Maximum number of entries to return</param>
+    /// <param name="reverse">If true, return elements in reversed order</param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public async Task<List<ZEntry>> ZScan(string set, ulong offset, ulong limit, bool reverse)
+    {
+        return await ZScan(Utils.ToByteArray(set), offset, limit, reverse);
+    }
+
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
     /// <param name="set"></param>
     /// <param name="limit"></param>
     /// <param name="reverse"></param>
@@ -1732,7 +1745,31 @@ public partial class ImmuClient
             Limit = limit,
             SeekScore = scoreOffset,
             InclusiveSeek = true,
-            Desc = reverse
+            Desc = reverse,
+        };
+
+        ImmudbProxy.ZEntries zEntries = await Service.ZScanAsync(req, Service.GetHeaders(ActiveSession));
+        return BuildList(zEntries);
+    }
+
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
+    /// <param name="set"></param>
+    /// <param name="offset"></param>
+    /// <param name="limit"></param>
+    /// <param name="reverse"></param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public async Task<List<ZEntry>> ZScan(byte[] set, ulong offset, ulong limit, bool reverse)
+    {
+        CheckSessionHasBeenOpened();
+        ImmudbProxy.ZScanRequest req = new ImmudbProxy.ZScanRequest()
+        {
+            Set = Utils.ToByteString(set),
+            Limit = limit,
+            Offset = offset,
+            InclusiveSeek = true,
+            Desc = reverse,
         };
 
         ImmudbProxy.ZEntries zEntries = await Service.ZScanAsync(req, Service.GetHeaders(ActiveSession));
