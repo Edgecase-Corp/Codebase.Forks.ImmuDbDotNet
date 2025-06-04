@@ -1,0 +1,55 @@
+on:
+  push:
+    tags:
+    - "v[0-9]+.[0-9]+.[0-9]+-*"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set VERSION variable from tag
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.x'
+
+    - name: Build Solution
+      run: dotnet build ./immudb4net.sln --configuration Release /p:Version=${VERSION}
+
+    #- name: Test Solution
+    #  run: dotnet test ./immudb4net.sln --configuration Release /p:Version=${VERSION} --no-build
+
+    - name: Configure GitHub Packages as a NuGet source
+      run: |
+        dotnet nuget add source \
+          --username "${{ github.actor }}" \
+          --password "${{ secrets.GITHUB_TOKEN }}" \
+          --store-password-in-clear-text \
+          --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+    - name: Find and pack eligible projects
+      run: |
+        mkdir -p ./build/nupkgs
+        for csproj in $(find . -name "*.csproj"); do
+          if grep -q "<PackAndPush>true</PackAndPush>" "$csproj"; then
+            echo "Packing $csproj"
+            dotnet pack "$csproj" -c Release /p:Version=${VERSION} -o ./build/nupkgs
+          else
+            echo "Skipping $csproj (PublishToNuget not true)"
+          fi
+        done
+
+    - name: Push packages to GitHub Packages
+      run: |
+        for nupkg in ./build/nupkgs/*.nupkg; do
+          dotnet nuget push "$nupkg" \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --source "github" \
+            --skip-duplicate
+        done

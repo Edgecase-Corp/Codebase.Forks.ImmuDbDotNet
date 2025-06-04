@@ -249,7 +249,7 @@ public partial class ImmuClient
                     var verifiableTx = Service.VerifiableTxById(new VerifiableTxRequest
                     {
                         SinceTx = localState.TxId,
-			ProveSinceTx = localState.TxId,
+                        ProveSinceTx = localState.TxId,
                         Tx = serverState.TxId,
                         EntriesSpec = new EntriesSpec
                         {
@@ -1261,20 +1261,22 @@ public partial class ImmuClient
     /// <param name="reference">The reference</param>
     /// <param name="referencedKey">The lookup key</param>
     /// <returns>The transaction information</returns>
-    public async Task<TxHeader> VerifiedSetReference(string reference, string referencedKey) {
+    public async Task<TxHeader> VerifiedSetReference(string reference, string referencedKey)
+    {
         return await VerifiedSetReference(
-            Utils.ToByteArray(reference), 
-            Utils.ToByteArray(referencedKey), 
+            Utils.ToByteArray(reference),
+            Utils.ToByteArray(referencedKey),
             0);
     }
-    
+
     /// <summary>
     /// Adds with authenticity check a tag (reference) to a specific key/value element in the selected database
     /// </summary>
     /// <param name="reference">The reference</param>
     /// <param name="referencedKey">The lookup key</param>
     /// <returns>The transaction information</returns>
-    public async Task<TxHeader> VerifiedSetReference(byte[] reference, byte[] referencedKey) {
+    public async Task<TxHeader> VerifiedSetReference(byte[] reference, byte[] referencedKey)
+    {
         return await VerifiedSetReference(reference, referencedKey, 0);
     }
 
@@ -1290,7 +1292,7 @@ public partial class ImmuClient
         CheckSessionHasBeenOpened();
 
         ImmuState state = State;
-       
+
         ImmudbProxy.VerifiableReferenceRequest req = new ImmudbProxy.VerifiableReferenceRequest()
         {
             ReferenceRequest = new ReferenceRequest
@@ -1645,6 +1647,32 @@ public partial class ImmuClient
     /// <summary>
     /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
     /// </summary>
+    /// <param name="set">The set identifier</param>
+    /// <param name="keyOffset">The inclusive offset at which to continue the search</param>
+    /// <param name="limit">Maximum number of entries to return</param>
+    /// <param name="reverse">If true, return elements in reversed order</param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public async Task<List<ZEntry>> ZScan(string set, string keyOffset, ulong limit, bool reverse)
+    {
+        return await ZScan(Utils.ToByteArray(set), Utils.ToByteArray(keyOffset), limit, reverse);
+    }
+
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
+    /// <param name="set">The set identifier</param>
+    /// <param name="scoreOffset">The inclusive offset at which to continue the search</param>
+    /// <param name="limit">Maximum number of entries to return</param>
+    /// <param name="reverse">If true, return elements in reversed order</param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public async Task<List<ZEntry>> ZScan(string set, double scoreOffset, ulong limit, bool reverse)
+    {
+        return await ZScan(Utils.ToByteArray(set), scoreOffset, limit, reverse);
+    }
+
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
     /// <param name="set"></param>
     /// <param name="limit"></param>
     /// <param name="reverse"></param>
@@ -1656,6 +1684,54 @@ public partial class ImmuClient
         {
             Set = Utils.ToByteString(set),
             Limit = limit,
+            Desc = reverse
+        };
+
+        ImmudbProxy.ZEntries zEntries = await Service.ZScanAsync(req, Service.GetHeaders(ActiveSession));
+        return BuildList(zEntries);
+    }
+
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
+    /// <param name="set"></param>
+    /// <param name="keyOffset"></param>
+    /// <param name="limit"></param>
+    /// <param name="reverse"></param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public async Task<List<ZEntry>> ZScan(byte[] set, byte[] keyOffset, ulong limit, bool reverse)
+    {
+        CheckSessionHasBeenOpened();
+        ImmudbProxy.ZScanRequest req = new ImmudbProxy.ZScanRequest()
+        {
+            Set = Utils.ToByteString(set),
+            Limit = limit,
+            SeekKey = Utils.ToByteString(keyOffset),
+            InclusiveSeek = true,
+            Desc = reverse
+        };
+
+        ImmudbProxy.ZEntries zEntries = await Service.ZScanAsync(req, Service.GetHeaders(ActiveSession));
+        return BuildList(zEntries);
+    }
+
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
+    /// <param name="set"></param>
+    /// <param name="scoreOffset"></param>
+    /// <param name="limit"></param>
+    /// <param name="reverse"></param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public async Task<List<ZEntry>> ZScan(byte[] set, double scoreOffset, ulong limit, bool reverse)
+    {
+        CheckSessionHasBeenOpened();
+        ImmudbProxy.ZScanRequest req = new ImmudbProxy.ZScanRequest()
+        {
+            Set = Utils.ToByteString(set),
+            Limit = limit,
+            SeekScore = scoreOffset,
+            InclusiveSeek = true,
             Desc = reverse
         };
 
@@ -1844,7 +1920,7 @@ public partial class ImmuClient
         };
 
         ImmudbProxy.TxList txList = await Service.TxScanAsync(req, Service.GetHeaders(ActiveSession));
-        return buildList(txList);
+        return BuildList(txList);
     }
 
     /// <summary>
@@ -1863,7 +1939,7 @@ public partial class ImmuClient
             Desc = desc
         };
         ImmudbProxy.TxList txList = await Service.TxScanAsync(req, Service.GetHeaders(ActiveSession));
-        return buildList(txList);
+        return BuildList(txList);
     }
 
     //
@@ -2055,7 +2131,7 @@ public partial class ImmuClient
         return result;
     }
 
-    private List<Tx> buildList(ImmudbProxy.TxList txList)
+    private List<Tx> BuildList(ImmudbProxy.TxList txList)
     {
         List<Tx> result = new List<Tx>(txList.Txs.Count);
         txList.Txs.ToList().ForEach(tx =>

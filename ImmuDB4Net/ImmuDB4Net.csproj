@@ -1,48 +1,55 @@
-<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-		<Description>.NET SDK for ImmuDB</Description>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<LangVersion>10.0</LangVersion>
-		<PackageId>ImmuDB4Net</PackageId>
-		<Version>1.0.5</Version>
-		<PackageVersion>1.0.5</PackageVersion>
-		<Authors>CodeNotary engineering</Authors>
-		<Company>CodeNotary Inc.</Company>
-		<RepositoryUrl>https://github.com/codenotary/immudb4net</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-		<PackageReadmeFile>Readme.md</PackageReadmeFile>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <Description>.NET SDK for ImmuDB</Description>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
+    <PackageId>ImmuDB4Net</PackageId>
+    <Version>1.0.5</Version>
+    <PackageVersion>1.0.5</PackageVersion>
+    <Authors>CodeNotary engineering</Authors>
+    <Company>CodeNotary Inc.</Company>
+    <RepositoryUrl>https://github.com/codenotary/immudb4net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
 
-		<Product>.NET SDK for ImmuDB</Product>
-		<Copyright>CodeNotary Inc.</Copyright>
-		<Owners>CodeNotary Inc.</Owners>
-		<PackageTags>immudb codenotary immutable sbom</PackageTags>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-	</PropertyGroup>
-	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-			<_Parameter1>$(AssemblyName).Tests</_Parameter1>			<!-- We use the value of AssemblyName to declare the value of the attribute -->
-		</AssemblyAttribute>
-	</ItemGroup>
-    <ItemGroup>
-        <None Include="..\Readme.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Grpc.Tools" Version="2.47.0">
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
+    <Product>.NET SDK for ImmuDB</Product>
+    <Copyright>CodeNotary Inc.</Copyright>
+    <Owners>CodeNotary Inc.</Owners>
+    <PackageTags>immudb codenotary immutable sbom</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0"/>
-		<PackageReference Include="Google.Protobuf" Version="3.21.2"/>
-		<PackageReference Include="System.Text.Json" Version="6.0.5"/>
-		<PackageReference Include="Google.Api.CommonProtos" Version="2.6.0"/>
-		<PackageReference Include="Grpc.Net.Client" Version="2.46.0"/>
-		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.46.0"/>
-	</ItemGroup>
-	<ItemGroup>
-		<Protobuf Include="proto/schema.proto" OutputDir="%(RelativeDir)/.." GrpcServices="client" />
-	</ItemGroup>
+    <PackAndPush>true</PackAndPush>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>$(AssemblyName).Tests</_Parameter1>
+      <!-- We use the value of AssemblyName to declare the value of the attribute -->
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grpc.Tools" Version="2.72.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
+    <PackageReference Include="System.Text.Json" Version="9.0.5" />
+    <PackageReference Include="Google.Api.CommonProtos" Version="2.17.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Protobuf Include="proto/schema.proto" OutputDir="%(RelativeDir)/.." GrpcServices="client" />
+  </ItemGroup>
 </Project>

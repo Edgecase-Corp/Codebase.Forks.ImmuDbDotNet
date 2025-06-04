@@ -1480,6 +1480,54 @@ public partial class ImmuClientSync
         return BuildList(zEntries);
     }
 
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
+    /// <param name="set"></param>
+    /// <param name="keyOffset"></param>
+    /// <param name="limit"></param>
+    /// <param name="reverse"></param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public List<ZEntry> ZScan(byte[] set, byte[] keyOffset, ulong limit, bool reverse)
+    {
+        CheckSessionHasBeenOpened();
+        ImmudbProxy.ZScanRequest req = new ImmudbProxy.ZScanRequest()
+        {
+            Set = Utils.ToByteString(set),
+            Limit = limit,
+            SeekKey = Utils.ToByteString(keyOffset),
+            InclusiveSeek = true,
+            Desc = reverse
+        };
+
+        ImmudbProxy.ZEntries zEntries = Service.ZScan(req, Service.GetHeaders(ActiveSession));
+        return BuildList(zEntries);
+    }
+
+    /// <summary>
+    /// Iterates over the entries added with ZAdd in the selected database and retrieves the values for the matching criteria
+    /// </summary>
+    /// <param name="set"></param>
+    /// <param name="scoreOffset"></param>
+    /// <param name="limit"></param>
+    /// <param name="reverse"></param>
+    /// <returns>A list of <see cref="Entry"/> objects.</returns>
+    public List<ZEntry> ZScan(byte[] set, double scoreOffset, ulong limit, bool reverse)
+    {
+        CheckSessionHasBeenOpened();
+        ImmudbProxy.ZScanRequest req = new ImmudbProxy.ZScanRequest()
+        {
+            Set = Utils.ToByteString(set),
+            Limit = limit,
+            SeekScore = scoreOffset,
+            InclusiveSeek = true,
+            Desc = reverse
+        };
+
+        ImmudbProxy.ZEntries zEntries = Service.ZScan(req, Service.GetHeaders(ActiveSession));
+        return BuildList(zEntries);
+    }
+
     //
     // ========== DELETE ==========
     //

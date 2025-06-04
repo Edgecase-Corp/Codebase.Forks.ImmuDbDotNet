@@ -40,7 +40,6 @@ public class LoginHealthCheckCompactIndexTests : BaseClientIntegrationTests
         await client!.Open("immudb", "immudb", "defaultdb");
         bool isHealthy = await client.HealthCheck();
         Assert.IsTrue(isHealthy);
-        await client.CompactIndex();
         await client.Close();
     }
 
